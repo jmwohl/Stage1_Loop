@@ -22,43 +22,48 @@ boolean debug;
 int fillColor = 0;
 
 void setup() {
-  size(1280, 1024);
+  size(1024,786);
   frameRate(30);
   println(Arduino.list());
-  arduino = new Arduino(this, "/dev/tty.usbmodem1411", 57600);
+  
+  // for Mac
+//  arduino = new Arduino(this, "/dev/tty-something", 57600);
+  
+  // for Odroid
+  arduino = new Arduino(this, "/dev/ttyACM0", 57600);
   arduino.pinMode(4, Arduino.INPUT);
-  String[] cameras = Capture.list();
+//  String[] cameras = Capture.list();
 
-  if (cameras == null) {
-    println("Failed to retrieve the list of available cameras, will try the default...");
-    cam = new Capture(this, 640, 480);
-  } if (cameras.length == 0) {
-    println("There are no cameras available for capture.");
-    exit();
-  } else {
-    println("Available cameras:");
-    for (int i = 0; i < cameras.length; i++) {
-      println(cameras[i]);
-    }
+//  if (cameras == null) {
+//    println("Failed to retrieve the list of available cameras, will try the default...");
+//    cam = new Capture(this, 640, 480);
+//  } if (cameras.length == 0) {
+//    println("There are no cameras available for capture.");
+//    exit();
+//  } else {
+//    println("Available cameras:");
+//    for (int i = 0; i < cameras.length; i++) {
+//      println(cameras[i]);
+//    }
 
-    cam = new Capture(this, 640, 480, "Logitech Camera", 30);
+    cam = new Capture(this, 320, 240, "/dev/video0", 30);
     cam.start();
     // instantiate focus passing an initial input image
     attention = new Attention(this, cam);
-    out = attention.focus(cam, width, height);
-  }
+    out = attention.focus(cam, cam.width, cam.height);
+//  }
 }
 
 void draw() {
   if (cam.available() == true) {
     cam.read();
   }
-  out = attention.focus(cam, width, height);
-  //println(frameCount);
-  image(out, 0, 0);
-  //filter(BLUR, 1);
-  filter(THRESHOLD, map(arduino.analogRead(0), 0, 1024, 0, 1));
-  
+  out = attention.focus(cam, cam.width, cam.height);
+
+//  out.filter(THRESHOLD, map(arduino.analogRead(0), 0, 1024, 0, 1));
+  out.filter(THRESHOLD, map(mouseY, 0, 786, 0, 1));
+//  out.filter(BLUR, 1);
+  image(out, 0, 0, width, height);
   // create balls with a pushbutton
   if (arduino.digitalRead(4) == Arduino.HIGH){
     // create new ball
@@ -105,5 +110,3 @@ void keyPressed() {
     debug = !debug;
   }
 }
-
-
