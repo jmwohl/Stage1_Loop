@@ -19,6 +19,7 @@ PVector resizeRatio = new PVector(displayW / camW, displayH / camH);
 
 Arduino arduino;
 int buttonPin = 4;
+int potPin = 0;
 
 Capture cam;
 
@@ -78,7 +79,7 @@ void draw() {
     cam.read();
   }
   
-  // show attention on buttonpress
+  // show attention view on buttonpress
   if (arduino.digitalRead(buttonPin) == Arduino.HIGH){
     buttonDown = true; 
   } else {
@@ -87,7 +88,7 @@ void draw() {
   
   if (!buttonDown) {
     out = attention.focus(cam, cam.width, cam.height);
-    out.filter(THRESHOLD, map(mouseY, 0, 786, 0, 1));
+    out.filter(THRESHOLD, map(arduino.analogRead(potPin), 0, 786, 0, 1));
     image(out, 0, 0, width, height);
   } else {
     out = cam;
@@ -99,15 +100,6 @@ void draw() {
 //  out.filter(THRESHOLD, map(mouseY, 0, 786, 0, 1));
 //  out.filter(BLUR, 1);
 
-  
-   
-  // to use with the key C
-  if (addBall && countdown > 0){
-    noStroke();
-    fill(0);
-    ellipse(500+countdown*3, 300+countdown, 50, 50);
-    countdown--;
-  }
   if (debug){
     showUI();
   }
@@ -140,7 +132,7 @@ void drawAttention() {
     
     // draw matte
     noStroke();  
-    fill(0, 0, 0, 100);
+    fill(0, 0, 0, 150);
     PShape s;
     s = createShape();
     s.beginShape();
