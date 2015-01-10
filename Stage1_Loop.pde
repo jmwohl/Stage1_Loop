@@ -8,11 +8,22 @@ import processing.video.*;
 import gab.opencv.*;
 import processing.serial.*;
 import cc.arduino.*;
+
+int displayW = 1024;
+int displayH = 768;
+
+int camW = 320;
+int camH = 240;
+
+PVector resizeRatio = new PVector(displayW / camW, displayH / camH);
+
 Arduino arduino;
+int buttonPin = 4;
 
 Capture cam;
+
 OpenCV opencv;
-PImage out;
+PImage out, bw;
 boolean addBall = false;
 int countdown = 0;
 int counter = 0;
@@ -21,16 +32,19 @@ PImage src, dst;
 boolean debug;
 int fillColor = 0;
 
+boolean buttonDown = false;
+
 void setup() {
-  size(1024,786);
+  size(displayW,displayH, P2D);
   frameRate(30);
-  println(Arduino.list());
+  String[] ards = Arduino.list();
+  println(ards);
   
   // for Mac
-//  arduino = new Arduino(this, "/dev/tty-something", 57600);
+  arduino = new Arduino(this, ards[ards.length - 1], 57600);
   
   // for Odroid
-  arduino = new Arduino(this, "/dev/ttyACM0", 57600);
+//  arduino = new Arduino(this, ards[ards.length - 1], 57600);
   arduino.pinMode(4, Arduino.INPUT);
 //  String[] cameras = Capture.list();
 
@@ -46,7 +60,12 @@ void setup() {
 //      println(cameras[i]);
 //    }
 
-    cam = new Capture(this, 320, 240, "/dev/video0", 30);
+    // mac
+    cam = new Capture(this, camW, camH);
+    
+    // odroid
+//    cam = new Capture(this, 320, 240, "/dev/video0", 30);
+
     cam.start();
     // instantiate focus passing an initial input image
     attention = new Attention(this, cam);
@@ -58,29 +77,29 @@ void draw() {
   if (cam.available() == true) {
     cam.read();
   }
-  out = attention.focus(cam, cam.width, cam.height);
-
-//  out.filter(THRESHOLD, map(arduino.analogRead(0), 0, 1024, 0, 1));
-  out.filter(THRESHOLD, map(mouseY, 0, 786, 0, 1));
-//  out.filter(BLUR, 1);
-  image(out, 0, 0, width, height);
-  // create balls with a pushbutton
-  if (arduino.digitalRead(4) == Arduino.HIGH){
-    // create new ball
-    noStroke();
-    fill(fillColor);
-    ellipse(width/2, height/2, counter*2, counter*2);
-    counter++;
-    println(fillColor);
+  
+  // show attention on buttonpress
+  if (arduino.digitalRead(buttonPin) == Arduino.HIGH){
+    buttonDown = true; 
   } else {
-    counter = 0;
-    // test: change the color from black to white
-    if (fillColor == 0){
-      fillColor = 255;
-    } else {
-      fillColor = 0;
-    }
+    buttonDown = false;
   }
+  
+  if (!buttonDown) {
+    out = attention.focus(cam, cam.width, cam.height);
+    out.filter(THRESHOLD, map(mouseY, 0, 786, 0, 1));
+    image(out, 0, 0, width, height);
+  } else {
+    out = cam;
+    image(out, 0, 0, width, height);
+    drawAttention();
+  }
+  
+//  out.filter(THRESHOLD, map(arduino.analogRead(0), 0, 1024, 0, 1));
+//  out.filter(THRESHOLD, map(mouseY, 0, 786, 0, 1));
+//  out.filter(BLUR, 1);
+
+  
    
   // to use with the key C
   if (addBall && countdown > 0){
@@ -102,11 +121,77 @@ void showUI(){
   rect(10, 10, map(arduino.analogRead(0), 0, 1024, 0, 100), 20);
 }
 
+
+void drawAttention() {
+    int yOffset = 20;
+  
+    ArrayList<PVector> vertices = attention.getPoints();
+    ArrayList<PVector> tVs = new ArrayList<PVector>();
+    println(vertices);
+    int size = vertices.size();
+
+    // draw lines
+    for (int i = 0; i < size; i++) {
+      tVs.add(new PVector());
+      tVs.get(i).set(vertices.get(i));
+      tVs.get(i).x = tVs.get(i).x * resizeRatio.x;
+      tVs.get(i).y = tVs.get(i).y * resizeRatio.y + yOffset;
+    }
+    
+    // draw matte
+    noStroke();  
+    fill(0, 0, 0, 100);
+    PShape s;
+    s = createShape();
+    s.beginShape();
+    s.vertex(0, 0);
+    s.vertex(displayW, 0);
+    s.vertex(displayW, displayH);
+    s.vertex(0, displayH);
+    s.vertex(tVs.get(3).x, tVs.get(3).y);
+    s.vertex(tVs.get(2).x, tVs.get(2).y);
+    s.vertex(tVs.get(1).x, tVs.get(1).y);
+    s.vertex(tVs.get(0).x, tVs.get(0).y);
+    s.vertex(tVs.get(3).x, tVs.get(3).y);
+    s.vertex(0, displayH);
+    s.vertex(0, 0);
+    s.endShape();
+    shape(s, 0, 0);
+
+    // draw lines
+    stroke(0, 255, 0);
+    strokeWeight(5);
+    noFill();
+    for (int i = 0; i < size; i++) {
+      PVector a = tVs.get(i);
+      PVector b;
+      if (i < tVs.size() - 1) {
+        b = tVs.get(i + 1);
+      } else {
+        b = tVs.get(0);
+      }
+
+      line(a.x, a.y, b.x, b.y);
+    }
+    // draw vertices
+//    for (int i = 0; i < size; i++) {
+//      vertices.get(i).draw();
+//    }
+  }
+
 void keyPressed() {
   if (key == 'C' || key == 'c') {
     countdown = 60;
     addBall = true;
   } else if (key == 'D' || key == 'd'){
     debug = !debug;
+  } else if (key == 'B' || key == 'b'){
+    buttonDown = true;
+  }
+}
+
+void keyReleased() {
+  if (key == 'B' || key == 'b'){
+    buttonDown = false;
   }
 }
