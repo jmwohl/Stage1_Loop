@@ -32,7 +32,7 @@ int fillColor = 0;
 boolean buttonDown = false;
 
 void setup() {
-  size(displayW,displayH, P2D);
+  size(displayW,displayH);
   frameRate(30);
   String[] ards = Arduino.list();
   println(ards);
