@@ -23,11 +23,7 @@ int potPin = 0;
 
 Capture cam;
 
-OpenCV opencv;
 PImage out, bw;
-boolean addBall = false;
-int countdown = 0;
-int counter = 0;
 Attention attention;
 PImage src, dst;
 boolean debug;
@@ -57,8 +53,8 @@ void setup() {
   cam.start();
   
   // instantiate focus passing an initial input image
-//  attention = new Attention(this, cam);
-//  out = attention.focus(cam, cam.width, cam.height);
+  attention = new Attention(this, cam);
+  out = attention.focus(cam, cam.width, cam.height);
 }
 
 void draw() {
@@ -74,22 +70,15 @@ void draw() {
   }
   
   if (!buttonDown) {
-//    out = attention.focus(cam, cam.width, cam.height);
-//    out.filter(THRESHOLD, map(arduino.analogRead(potPin), 0, 786, 0, 1));
+    out = attention.focus(cam, cam.width, cam.height);
+    out.filter(THRESHOLD, map(arduino.analogRead(potPin), 0, 786, 0, 1));
     image(out, 0, 0, width, height);
   } else {
     out = cam;
     image(out, 0, 0, width, height);
-//    drawAttention();
+    drawAttention();
   }
-  
-//  out.filter(THRESHOLD, map(arduino.analogRead(0), 0, 1024, 0, 1));
-//  out.filter(THRESHOLD, map(mouseY, 0, 786, 0, 1));
-//  out.filter(BLUR, 1);
 
-  if (debug){
-//    showUI();
-  }
 }
 
 
@@ -113,7 +102,7 @@ void drawAttention() {
     // draw matte
     noStroke();  
     fill(0, 0, 0, 150);
-    /*    
+       
     PShape s;
     s = createShape();
     s.beginShape();
@@ -130,7 +119,7 @@ void drawAttention() {
     s.vertex(0, 0);
     s.endShape();
     shape(s, 0, 0);
-    */
+    
     // draw lines
     stroke(0, 255, 0);
     strokeWeight(5);
@@ -153,10 +142,7 @@ void drawAttention() {
   }
 
 void keyPressed() {
-  if (key == 'C' || key == 'c') {
-    countdown = 60;
-    addBall = true;
-  } else if (key == 'D' || key == 'd'){
+  if (key == 'D' || key == 'd'){
     debug = !debug;
   } else if (key == 'B' || key == 'b'){
     buttonDown = true;
