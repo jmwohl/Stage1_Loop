@@ -57,8 +57,8 @@ void setup() {
   cam.start();
   
   // instantiate focus passing an initial input image
-  attention = new Attention(this, cam);
-  out = attention.focus(cam, cam.width, cam.height);
+//  attention = new Attention(this, cam);
+//  out = attention.focus(cam, cam.width, cam.height);
 }
 
 void draw() {
@@ -74,13 +74,13 @@ void draw() {
   }
   
   if (!buttonDown) {
-    out = attention.focus(cam, cam.width, cam.height);
-    out.filter(THRESHOLD, map(arduino.analogRead(potPin), 0, 786, 0, 1));
+//    out = attention.focus(cam, cam.width, cam.height);
+//    out.filter(THRESHOLD, map(arduino.analogRead(potPin), 0, 786, 0, 1));
     image(out, 0, 0, width, height);
   } else {
     out = cam;
     image(out, 0, 0, width, height);
-    drawAttention();
+//    drawAttention();
   }
   
 //  out.filter(THRESHOLD, map(arduino.analogRead(0), 0, 1024, 0, 1));
@@ -88,20 +88,13 @@ void draw() {
 //  out.filter(BLUR, 1);
 
   if (debug){
-    showUI();
+//    showUI();
   }
-}
-
-void showUI(){
-  noFill();
-  stroke(219, 255, 0);
-  rect(10, 10, 100, 20);
-  fill(219, 255, 0);
-  rect(10, 10, map(arduino.analogRead(0), 0, 1024, 0, 100), 20);
 }
 
 
 void drawAttention() {
+ 
     int yOffset = 20;
   
     ArrayList<PVector> vertices = attention.getPoints();
