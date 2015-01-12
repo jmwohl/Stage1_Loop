@@ -42,36 +42,23 @@ void setup() {
   println(ards);
   
   // for Mac
-  arduino = new Arduino(this, ards[ards.length - 1], 57600);
+  // arduino = new Arduino(this, ards[ards.length - 1], 57600);
   
   // for Odroid
-//  arduino = new Arduino(this, ards[ards.length - 1], 57600);
+  arduino = new Arduino(this, ards[0], 57600);
   arduino.pinMode(4, Arduino.INPUT);
-//  String[] cameras = Capture.list();
-
-//  if (cameras == null) {
-//    println("Failed to retrieve the list of available cameras, will try the default...");
-//    cam = new Capture(this, 640, 480);
-//  } if (cameras.length == 0) {
-//    println("There are no cameras available for capture.");
-//    exit();
-//  } else {
-//    println("Available cameras:");
-//    for (int i = 0; i < cameras.length; i++) {
-//      println(cameras[i]);
-//    }
-
-    // mac
-    cam = new Capture(this, camW, camH);
+  
+  // mac
+  // cam = new Capture(this, camW, camH);
     
-    // odroid
-//    cam = new Capture(this, 320, 240, "/dev/video0", 30);
+  // odroid
+  cam = new Capture(this, camW, camH, "/dev/video0", 30);
 
-    cam.start();
-    // instantiate focus passing an initial input image
-    attention = new Attention(this, cam);
-    out = attention.focus(cam, cam.width, cam.height);
-//  }
+  cam.start();
+  
+  // instantiate focus passing an initial input image
+  attention = new Attention(this, cam);
+  out = attention.focus(cam, cam.width, cam.height);
 }
 
 void draw() {
@@ -133,6 +120,7 @@ void drawAttention() {
     // draw matte
     noStroke();  
     fill(0, 0, 0, 150);
+    /*    
     PShape s;
     s = createShape();
     s.beginShape();
@@ -149,7 +137,7 @@ void drawAttention() {
     s.vertex(0, 0);
     s.endShape();
     shape(s, 0, 0);
-
+    */
     // draw lines
     stroke(0, 255, 0);
     strokeWeight(5);
