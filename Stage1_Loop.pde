@@ -38,27 +38,27 @@ boolean buttonDown = false;
 void setup() {
   size(displayW,displayH, P2D);
   frameRate(30);
-  String[] ards = Arduino.list();
-  println(ards);
+//  String[] ards = Arduino.list();
+//  println(ards);
   
   // for Mac
   // arduino = new Arduino(this, ards[ards.length - 1], 57600);
   
   // for Odroid
-  arduino = new Arduino(this, ards[0], 57600);
-  arduino.pinMode(4, Arduino.INPUT);
+//  arduino = new Arduino(this, ards[0], 57600);
+//  arduino.pinMode(4, Arduino.INPUT);
   
   // mac
-  // cam = new Capture(this, camW, camH);
+  cam = new Capture(this, camW, camH);
     
   // odroid
-  cam = new Capture(this, camW, camH, "/dev/video0", 30);
+//  cam = new Capture(this, camW, camH, "/dev/video0", 30);
 
   cam.start();
   
   // instantiate focus passing an initial input image
-//  attention = new Attention(this, cam);
-//  out = attention.focus(cam, cam.width, cam.height);
+  attention = new Attention(this, cam);
+  out = attention.focus(cam, cam.width, cam.height);
 }
 
 void draw() {
@@ -67,20 +67,20 @@ void draw() {
   }
   
   // show attention view on buttonpress
-  if (arduino.digitalRead(buttonPin) == Arduino.HIGH){
-    buttonDown = true; 
-  } else {
-    buttonDown = false;
-  }
+//  if (arduino.digitalRead(buttonPin) == Arduino.HIGH){
+//    buttonDown = true; 
+//  } else {
+//    buttonDown = false;
+//  }
   
   if (!buttonDown) {
-//    out = attention.focus(cam, cam.width, cam.height);
-//    out.filter(THRESHOLD, map(arduino.analogRead(potPin), 0, 786, 0, 1));
+    out = attention.focus(cam, cam.width, cam.height);
+    out.filter(THRESHOLD, map(mouseY, 0, 786, 0, 1));
     image(out, 0, 0, width, height);
   } else {
     out = cam;
     image(out, 0, 0, width, height);
-//    drawAttention();
+    drawAttention();
   }
   
 //  out.filter(THRESHOLD, map(arduino.analogRead(0), 0, 1024, 0, 1));
@@ -113,7 +113,7 @@ void drawAttention() {
     // draw matte
     noStroke();  
     fill(0, 0, 0, 150);
-    /*    
+    
     PShape s;
     s = createShape();
     s.beginShape();
@@ -130,7 +130,7 @@ void drawAttention() {
     s.vertex(0, 0);
     s.endShape();
     shape(s, 0, 0);
-    */
+    
     // draw lines
     stroke(0, 255, 0);
     strokeWeight(5);
@@ -159,12 +159,12 @@ void keyPressed() {
   } else if (key == 'D' || key == 'd'){
     debug = !debug;
   } else if (key == 'B' || key == 'b'){
-    buttonDown = true;
+    buttonDown = !buttonDown;
   }
 }
 
 void keyReleased() {
   if (key == 'B' || key == 'b'){
-    buttonDown = false;
+//    buttonDown = false;
   }
 }
