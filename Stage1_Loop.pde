@@ -7,7 +7,7 @@ import com.jonwohl.*;
 import processing.video.*;
 import gab.opencv.*;
 import processing.serial.*;
-import cc.arduino.*;
+//import cc.arduino.*;
 
 int displayW = 1024;
 int displayH = 768;
@@ -17,7 +17,7 @@ int camH = 240;
 
 PVector resizeRatio = new PVector(displayW / camW, displayH / camH);
 
-Arduino arduino;
+//Arduino arduino;
 int buttonPin = 4;
 int potPin = 0;
 
@@ -49,10 +49,10 @@ void setup() {
 //  arduino.pinMode(4, Arduino.INPUT);
   
   // mac
-  cam = new Capture(this, camW, camH);
+//  cam = new Capture(this, camW, camH);
     
   // odroid
-//  cam = new Capture(this, camW, camH, "/dev/video0", 30);
+  cam = new Capture(this, camW, camH, "/dev/video0", 30);
 
   cam.start();
   
@@ -114,27 +114,42 @@ void drawAttention() {
     noStroke();  
     fill(0, 0, 0, 150);
     
-    PShape s;
-    s = createShape();
-    s.beginShape();
-    s.vertex(0, 0);
-    s.vertex(displayW, 0);
-    s.vertex(displayW, displayH);
-    s.vertex(0, displayH);
-    s.vertex(tVs.get(3).x, tVs.get(3).y);
-    s.vertex(tVs.get(2).x, tVs.get(2).y);
-    s.vertex(tVs.get(1).x, tVs.get(1).y);
-    s.vertex(tVs.get(0).x, tVs.get(0).y);
-    s.vertex(tVs.get(3).x, tVs.get(3).y);
-    s.vertex(0, displayH);
-    s.vertex(0, 0);
-    s.endShape();
-    shape(s, 0, 0);
+//    PShape s;
+//    s = createShape();
+//    s.beginShape();
+//    s.vertex(0, 0);
+//    s.vertex(displayW, 0);
+//    s.vertex(displayW, displayH);
+//    s.vertex(0, displayH);
+//    s.vertex(tVs.get(3).x, tVs.get(3).y);
+//    s.vertex(tVs.get(2).x, tVs.get(2).y);
+//    s.vertex(tVs.get(1).x, tVs.get(1).y);
+//    s.vertex(tVs.get(0).x, tVs.get(0).y);
+//    s.vertex(tVs.get(3).x, tVs.get(3).y);
+//    s.vertex(0, displayH);
+//    s.vertex(0, 0);
+//    s.endShape();
+//    shape(s, 0, 0);
     
     // draw lines
     stroke(0, 255, 0);
     strokeWeight(5);
     noFill();
+    for (int i = 0; i < size; i++) {
+      PVector a = tVs.get(i);
+      PVector b;
+      if (i < tVs.size() - 1) {
+        b = tVs.get(i + 1);
+      } else {
+        b = tVs.get(0);
+      }
+
+      line(a.x, a.y, b.x, b.y);
+    }
+    
+    // draw mask
+    noStroke();
+    fill(255, 255, 255);
     for (int i = 0; i < size; i++) {
       PVector a = tVs.get(i);
       PVector b;
